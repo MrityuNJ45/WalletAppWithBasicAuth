@@ -1,7 +1,13 @@
 package com.example.MyPay3.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class Customer {
 
+    @Id
+    private Integer customerId;
     private String name;
 
     private String email;
@@ -12,6 +18,10 @@ public class Customer {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+
+    public Customer(Integer customerId) {
+        this.customerId = customerId;
     }
 
     public String getName() {
@@ -36,5 +46,13 @@ public class Customer {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Integer getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
     }
 }

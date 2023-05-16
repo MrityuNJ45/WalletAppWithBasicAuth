@@ -66,7 +66,13 @@ class CustomerControllerTest {
     public void expectsToWithDrawMoneyIfValidUser() throws Exception {
         Integer money = 100;
         this.mockMvc.perform(put("/customer/withdraw/{money}", money).with(user("morty"))).andExpect(status().isOk())
-                .andExpect(content().string("money withdraw from : morty"));
+                .andExpect(content().string("money withdrawn from : morty"));
+    }
+
+    @Test
+    public void expectsToGive403IfInvalidUserForWithdrawingMoney() throws Exception {
+        Integer money = 100;
+        this.mockMvc.perform(put("/customer/withdraw/{money}", money)).andExpect(status().isUnauthorized());
     }
 
 
