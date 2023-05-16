@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 public class Customer {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer customerId;
     private String name;
 
@@ -20,6 +21,18 @@ public class Customer {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+
+    public Customer(Integer customerId, String name, String email, String password, Wallet wallet) {
+        this.customerId = customerId;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.wallet = wallet;
+    }
+
+    public Customer(){
+
     }
 
     public Customer(Integer customerId) {
@@ -56,5 +69,17 @@ public class Customer {
 
     public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
+    }
+
+    public Customer(Wallet wallet) {
+        this.wallet = wallet;
+    }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
     }
 }

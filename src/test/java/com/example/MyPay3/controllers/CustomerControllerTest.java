@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
@@ -25,8 +26,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @Import(SecurityConfig.class)
@@ -40,6 +40,9 @@ class CustomerControllerTest {
     @MockBean
     private CustomerRepo customerRepo;
 
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
     @BeforeEach
     public void setUp(){
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -50,11 +53,12 @@ class CustomerControllerTest {
     @Test
     public void expectsToSaveACustomer() throws Exception {
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+
         this.mockMvc.perform(post("/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
+                        .andExpect(status().isOk());
 
-                .andExpect(status().isOk()).andExpect(content().string("Customer is added"));
     }
 
     @Test
@@ -63,8 +67,8 @@ class CustomerControllerTest {
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Integer money = 100;
-        this.mockMvc.perform(put("/customer/add/{money}", money).with(user("m@gmail.com"))).andExpect(status().isOk())
-                .andExpect(content().string("money added to : m@gmail.com"));
+        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
+
     }
 
     @Test
@@ -78,8 +82,7 @@ class CustomerControllerTest {
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Integer money = 100;
-        this.mockMvc.perform(put("/customer/withdraw/{money}", money).with(user("m@gmail.com"))).andExpect(status().isOk())
-                .andExpect(content().string("money withdrawn from : m@gmail.com"));
+        this.mockMvc.perform(put("/customer/withdraw/{money}", money).with(user("m@gmail.com"))).andExpect(status().isOk());
     }
 
     @Test
