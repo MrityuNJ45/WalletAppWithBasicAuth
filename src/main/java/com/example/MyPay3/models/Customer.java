@@ -1,7 +1,6 @@
 package com.example.MyPay3.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Customer {
@@ -13,6 +12,9 @@ public class Customer {
     private String email;
 
     private String password;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private Wallet wallet;
 
     public Customer(String name, String email, String password) {
         this.name = name;

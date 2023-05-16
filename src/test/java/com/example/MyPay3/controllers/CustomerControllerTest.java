@@ -2,12 +2,16 @@ package com.example.MyPay3.controllers;
 
 import com.example.MyPay3.config.SecurityConfig;
 import com.example.MyPay3.models.Customer;
+import com.example.MyPay3.repository.CustomerRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,6 +20,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,6 +36,9 @@ class CustomerControllerTest {
     private WebApplicationContext context;
 
     private MockMvc mockMvc;
+
+    @MockBean
+    private CustomerRepo customerRepo;
 
     @BeforeEach
     public void setUp(){
@@ -51,9 +59,12 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToAddMoneyIfValidUser() throws Exception {
+
+        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Integer money = 100;
-        this.mockMvc.perform(put("/customer/add/{money}", money).with(user("morty"))).andExpect(status().isOk())
-                .andExpect(content().string("money added to : morty"));
+        this.mockMvc.perform(put("/customer/add/{money}", money).with(user("m@gmail.com"))).andExpect(status().isOk())
+                .andExpect(content().string("money added to : m@gmail.com"));
     }
 
     @Test
@@ -64,9 +75,11 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToWithDrawMoneyIfValidUser() throws Exception {
+        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Integer money = 100;
-        this.mockMvc.perform(put("/customer/withdraw/{money}", money).with(user("morty"))).andExpect(status().isOk())
-                .andExpect(content().string("money withdrawn from : morty"));
+        this.mockMvc.perform(put("/customer/withdraw/{money}", money).with(user("m@gmail.com"))).andExpect(status().isOk())
+                .andExpect(content().string("money withdrawn from : m@gmail.com"));
     }
 
     @Test
