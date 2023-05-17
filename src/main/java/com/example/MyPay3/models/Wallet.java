@@ -9,6 +9,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 @Entity
 public class Wallet {
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer walletId;

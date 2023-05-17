@@ -37,7 +37,7 @@ public class CustomerController {
         if(customer == null) {
             throw new BadCredentialsException("Invalid username or password");
         }
-        return customerService.withdrawMoneyFromCustomerWallet(email,money);
+        return customerService.addMoneyToCustomerWallet(email,money);
     }
 
     @PutMapping("/customer/withdraw/{money}")
