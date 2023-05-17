@@ -34,9 +34,16 @@ public class CustomerService {
         return customerRepo.save(customer);
     }
 
-    public Customer withdrawMoneyFromCustomerWallet(String email, Integer money){
+    public Customer withdrawMoneyFromCustomerWallet(String email, Integer money) throws IllegalStateException{
 
-        return customerRepo.findByEmail(email);
+        Customer customer = customerRepo.findByEmail(email);
+        Wallet wallet = customer.getWallet();
+        if(wallet.getBalance() < money){
+            throw new IllegalStateException("Insufficient amount to withdraw");
+        }
+        wallet.setBalance(wallet.getBalance() - money);
+        walletRepo.save(wallet);
+        return customerRepo.save(customer);
 
     }
 

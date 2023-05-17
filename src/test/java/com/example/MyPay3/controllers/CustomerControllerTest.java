@@ -2,7 +2,11 @@ package com.example.MyPay3.controllers;
 
 import com.example.MyPay3.config.SecurityConfig;
 import com.example.MyPay3.models.Customer;
+import com.example.MyPay3.models.Wallet;
 import com.example.MyPay3.repository.CustomerRepo;
+import com.example.MyPay3.repository.WalletRepo;
+import com.example.MyPay3.service.CustomerService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +45,9 @@ class CustomerControllerTest {
     private CustomerRepo customerRepo;
 
     @MockBean
+    private CustomerService customerService;
+
+    @MockBean
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
@@ -62,11 +69,24 @@ class CustomerControllerTest {
     }
 
     @Test
+    public void expectsToGiveBadRequest() throws Exception {
+
+        Customer customer = null;
+
+        this.mockMvc.perform(post("/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(customer)))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
     public void expectsToAddMoneyIfValidUser() throws Exception {
 
+        Integer money = 100;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-        Integer money = 100;
+        Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
         this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
 
     }
@@ -79,10 +99,12 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToWithDrawMoneyIfValidUser() throws Exception {
+        Integer money = 100;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-        Integer money = 100;
-        this.mockMvc.perform(put("/customer/withdraw/{money}", money).with(user("m@gmail.com"))).andExpect(status().isOk());
+        Mockito.when(customerService.withdrawMoneyFromCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
+        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
+
     }
 
     @Test

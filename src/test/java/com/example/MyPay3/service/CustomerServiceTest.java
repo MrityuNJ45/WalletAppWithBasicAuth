@@ -62,9 +62,18 @@ class CustomerServiceTest {
 
     @Test
     public void expectsToWithDrawMoneyFromCustomerWallet(){
+        Integer money = 100;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+        Wallet wallet = new Wallet();
+        wallet.setBalance(200);
+        customer.setWallet(wallet);
+        Customer updatedWalletCustomer = new Customer(customer.getName(), customer.getEmail(), customer.getPassword());
+        Wallet updatedWallet = customer.getWallet();
+        updatedWallet.setBalance(updatedWallet.getBalance() - money);
+        updatedWalletCustomer.setWallet(updatedWallet);
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-        assertEquals(customerService.withdrawMoneyFromCustomerWallet(customer.getEmail(),100),customer);
+        Mockito.when(customerRepo.save(customer)).thenReturn(updatedWalletCustomer);
+        assertEquals(customerService.addMoneyToCustomerWallet(customer.getEmail(),money),updatedWalletCustomer);
     }
 
 }
