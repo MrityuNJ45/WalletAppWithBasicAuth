@@ -145,12 +145,19 @@ class CustomerServiceTest {
         Wallet wallet = new Wallet();
         sender.setCurrency(Currency.USD);
         wallet.setBalance(10.0);
-
+        sender.setWallet(wallet);
         Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
         receiver.setCurrency(Currency.INR);
         Wallet receiverWallet = new Wallet();
         receiverWallet.setBalance(200.0);
+        receiver.setWallet(receiverWallet);
+        Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
+        Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
+        assertEquals("Money transfer successfull", customerService.addMoneyToOtherUserWallet(sender.getEmail(),receiver.getEmail(), oneDollar));
+        assertEquals(200.0 + 73.03, receiver.getWallet().getBalance());
+
     }
+
 
 
 
