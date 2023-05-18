@@ -89,7 +89,7 @@ class CustomerControllerTest {
     @Test
     public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
 
-        Integer money = 100;
+        Double money = 100.0;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
@@ -99,13 +99,13 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToGiveStatus403IfInvalidUser() throws Exception {
-        Integer money = 100;
+        Double money = 100.0;
         this.mockMvc.perform(put("/customer/add/{money}", money)).andExpect(status().isUnauthorized());
     }
 
     @Test
     public void expectsToWithDrawMoneyIfValidUser() throws Exception {
-        Integer money = 100;
+        Double money = 100.0;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Mockito.when(customerService.withdrawMoneyFromCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
@@ -122,7 +122,7 @@ class CustomerControllerTest {
     @Test
     public void expectsToGiveHttpStatus202WhenTryingToAddMoneyToOtherUserWallet() throws Exception {
 
-        Integer money = 100;
+        Double money = 100.0;
         String otherUserEmail = "aaaa@gmail.com";
 
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}",otherUserEmail,money).with(user("valid@gmail.com")))
@@ -132,7 +132,7 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
-        Integer money = 100;
+        Double money = 100.0;
         String otherUserEmail = "aaaa@gmail.com";
 
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}", otherUserEmail, money))

@@ -1,12 +1,11 @@
 package com.example.MyPay3.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.context.annotation.Scope;
 
 @Entity
+@Scope("prototype")
 public class Wallet {
 
 
@@ -15,9 +14,10 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer walletId;
 
-    private Integer balance = 0;
 
-    public Wallet(Integer walletId, Integer balance) {
+    private Double balance = 0.0;
+
+    public Wallet(Integer walletId, Double balance) {
         this.walletId = walletId;
         this.balance = balance;
     }
@@ -33,11 +33,15 @@ public class Wallet {
         this.walletId = walletId;
     }
 
-    public Integer getBalance() {
+    public Double getBalance() {
         return balance;
     }
 
-    public void setBalance(Integer balance) {
+    public void setBalance(Double balance) {
         this.balance = balance;
     }
+
+
+
+
 }

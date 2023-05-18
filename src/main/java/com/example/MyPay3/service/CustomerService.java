@@ -25,7 +25,7 @@ public class CustomerService {
 
     }
 
-    public Customer addMoneyToCustomerWallet(String email, Integer money){
+    public Customer addMoneyToCustomerWallet(String email, Double money){
 
         Customer customer = customerRepo.findByEmail(email);
         Wallet wallet = customer.getWallet();
@@ -34,7 +34,7 @@ public class CustomerService {
         return customerRepo.save(customer);
     }
 
-    public Customer withdrawMoneyFromCustomerWallet(String email, Integer money) throws IllegalStateException{
+    public Customer withdrawMoneyFromCustomerWallet(String email,Double money) throws IllegalStateException{
 
         Customer customer = customerRepo.findByEmail(email);
         Wallet wallet = customer.getWallet();
@@ -47,11 +47,12 @@ public class CustomerService {
 
     }
 
-    public String addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, Integer money) throws IllegalStateException{
+    public String addMoneyToOtherUserWallet(String senderEmail, String receiverEmail,Double money) throws IllegalStateException{
         Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
         if(recievingCustomer == null){
             throw new IllegalStateException("Invalid receiver's email address");
         }
+        System.out.println(senderEmail);
         Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
         Wallet senderWallet = sendingCustomer.getWallet();
         Wallet receiverWallet = recievingCustomer.getWallet();
@@ -59,7 +60,8 @@ public class CustomerService {
             throw new IllegalStateException("Insufficient amount to transfer");
         }
 
-        receiverWallet.setBalance(receiverWallet.getBalance() + money);
+        double amountInRecieverCurrency = sendingCustomer.getCurrency().convert(money,recievingCustomer.getCurrency());
+        receiverWallet.setBalance(receiverWallet.getBalance() + amountInRecieverCurrency);
         senderWallet.setBalance(senderWallet.getBalance() - money);
         walletRepo.save(receiverWallet);
         walletRepo.save(senderWallet);

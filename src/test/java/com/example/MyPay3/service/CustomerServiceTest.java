@@ -1,5 +1,6 @@
 package com.example.MyPay3.service;
 
+import com.example.MyPay3.models.Currency;
 import com.example.MyPay3.models.Customer;
 import com.example.MyPay3.models.Wallet;
 import com.example.MyPay3.repository.CustomerRepo;
@@ -53,7 +54,7 @@ class CustomerServiceTest {
 
     @Test
     public void expectsToAddMoneyToCustomerWallet(){
-        Integer money = 100;
+        Double money = 100.0;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         customer.setWallet(new Wallet());
         Customer updatedWalletCustomer = new Customer(customer.getName(), customer.getEmail(), customer.getPassword());
@@ -67,10 +68,10 @@ class CustomerServiceTest {
 
     @Test
     public void expectsToWithDrawMoneyFromCustomerWallet(){
-        Integer money = 100;
+        Double money = 100.0;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Wallet wallet = new Wallet();
-        wallet.setBalance(200);
+        wallet.setBalance(200.0);
         customer.setWallet(wallet);
         Customer updatedWalletCustomer = new Customer(customer.getName(), customer.getEmail(), customer.getPassword());
         Wallet updatedWallet = customer.getWallet();
@@ -84,10 +85,10 @@ class CustomerServiceTest {
     @Test
     public void expectsToThrowExceptionWhenAddingMoneyToInvalidReciever(){
 
-        Integer money = 100;
+        Double money = 100.0;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Wallet wallet = new Wallet();
-        wallet.setBalance(200);
+        wallet.setBalance(200.0);
         customer.setWallet(wallet);
         String invalidEmail = "invalid@gmail.com";
         Mockito.when(customerRepo.findByEmail(invalidEmail)).thenReturn(null);
@@ -99,14 +100,14 @@ class CustomerServiceTest {
 
     @Test
     public void expectsToThrowExceptionWhenAddingMoneyToCustomerWithInsufficientAmountInCustomerWallet(){
-        Integer money = 500;
+        Double money = 500.0;
         Customer sender = new Customer("mohit", "m@gmail.com", "1234");
         Wallet wallet = new Wallet();
-        wallet.setBalance(200);
+        wallet.setBalance(200.0);
         sender.setWallet(wallet);
         Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
         Wallet receiverWallet = new Wallet();
-        receiverWallet.setBalance(200);
+        receiverWallet.setBalance(200.0);
         receiver.setWallet(receiverWallet);
         Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
         Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
@@ -119,19 +120,36 @@ class CustomerServiceTest {
 
     @Test
     public void expectsToAddMoneyToReceiverAccount(){
-        Integer money = 500;
+        Double money = 500.0;
         Customer sender = new Customer("mohit", "m@gmail.com", "1234");
         Wallet wallet = new Wallet();
-        wallet.setBalance(1000);
+        sender.setCurrency(Currency.INR);
+        wallet.setBalance(1000.0);
         sender.setWallet(wallet);
         Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
+        receiver.setCurrency(Currency.INR);
         Wallet receiverWallet = new Wallet();
-        receiverWallet.setBalance(200);
+        receiverWallet.setBalance(200.0);
         receiver.setWallet(receiverWallet);
         Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
         Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
         assertEquals("Money transfer successfull", customerService.addMoneyToOtherUserWallet(sender.getEmail(),receiver.getEmail(), money));
         assertEquals(200 + money, receiver.getWallet().getBalance());
+    }
+
+
+    @Test
+    public void expectsToAddMoneyToReceiverWhenSenderAndReceiverCurrencyAreDifferent(){
+        Double oneDollar = 1.0;
+        Customer sender = new Customer("mohit", "m@gmail.com", "1234");
+        Wallet wallet = new Wallet();
+        sender.setCurrency(Currency.USD);
+        wallet.setBalance(10.0);
+
+        Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
+        receiver.setCurrency(Currency.INR);
+        Wallet receiverWallet = new Wallet();
+        receiverWallet.setBalance(200.0);
     }
 
 

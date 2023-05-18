@@ -32,7 +32,7 @@ public class CustomerController {
     }
 
     @PutMapping("/customer/add/{money}")
-    public Customer addMoneyToCustomerWallet(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("money") Integer money){
+    public Customer addMoneyToCustomerWallet(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("money") Double money){
         Customer customer = customerRepo.findByEmail(email);
         if(customer == null) {
             throw new BadCredentialsException("Invalid username or password");
@@ -41,7 +41,7 @@ public class CustomerController {
     }
 
     @PutMapping("/customer/withdraw/{money}")
-    public Customer withDrawMoneyFromCustomerHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("money") Integer money){
+    public Customer withDrawMoneyFromCustomerHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("money") Double money){
         Customer customer = customerRepo.findByEmail(email);
         if(customer == null) {
             throw new BadCredentialsException("Invalid username or password");
@@ -50,14 +50,20 @@ public class CustomerController {
     }
 
     @PutMapping("/customer/addmoney/{otherUserEmail}/{money}")
-    public Customer addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal String email, @PathVariable("otherUserEmail") String otherUserEmail, @PathVariable("money") Integer money){
+    public String addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("otherUserEmail") String otherUserEmail, @PathVariable("money") Double money) throws IllegalArgumentException{
 
         Customer otherCustomer = customerRepo.findByEmail(otherUserEmail);
         if(otherCustomer == null) {
             throw new IllegalArgumentException("Invalid receiver's email address");
         }
-        return new Customer();
 
+        return customerService.addMoneyToOtherUserWallet(email, otherUserEmail, money);
+
+    }
+
+    @GetMapping("/customer")
+    public Customer getCustomer(@AuthenticationPrincipal(expression = "username") String email){
+        return customerRepo.findByEmail(email);
     }
 
 
