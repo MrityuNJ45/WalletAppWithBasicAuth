@@ -47,4 +47,26 @@ public class CustomerService {
 
     }
 
+    public String addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, Integer money) throws IllegalStateException{
+        Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
+        if(recievingCustomer == null){
+            throw new IllegalStateException("Invalid receiver's email address");
+        }
+        Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
+        Wallet senderWallet = sendingCustomer.getWallet();
+        Wallet receiverWallet = recievingCustomer.getWallet();
+        if(senderWallet.getBalance() < money){
+            throw new IllegalStateException("Insufficient amount to transfer");
+        }
+
+        receiverWallet.setBalance(receiverWallet.getBalance() + money);
+        senderWallet.setBalance(senderWallet.getBalance() - money);
+        walletRepo.save(receiverWallet);
+        walletRepo.save(senderWallet);
+        customerRepo.save(sendingCustomer);
+        customerRepo.save(recievingCustomer);
+        return "Money transfer successfull";
+
+    }
+
 }

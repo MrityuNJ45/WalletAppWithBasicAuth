@@ -18,7 +18,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
@@ -50,6 +53,9 @@ class CustomerControllerTest {
     @MockBean
     private PasswordEncoder passwordEncoder;
 
+    @MockBean
+    private Authentication authentication;
+
     @BeforeEach
     public void setUp(){
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -69,7 +75,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    public void expectsToGiveBadRequest() throws Exception {
+    public void expectsToGiveBadRequestWhenInvalidCustomerIsPosted() throws Exception {
 
         Customer customer = null;
 
@@ -81,7 +87,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    public void expectsToAddMoneyIfValidUser() throws Exception {
+    public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
 
         Integer money = 100;
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
@@ -92,7 +98,7 @@ class CustomerControllerTest {
     }
 
     @Test
-    public void expectsToGive403IfInvalidUser() throws Exception {
+    public void expectsToGiveStatus403IfInvalidUser() throws Exception {
         Integer money = 100;
         this.mockMvc.perform(put("/customer/add/{money}", money)).andExpect(status().isUnauthorized());
     }
@@ -112,6 +118,30 @@ class CustomerControllerTest {
         Integer money = 100;
         this.mockMvc.perform(put("/customer/withdraw/{money}", money)).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    public void expectsToGiveHttpStatus202WhenTryingToAddMoneyToOtherUserWallet() throws Exception {
+
+        Integer money = 100;
+        String otherUserEmail = "aaaa@gmail.com";
+
+        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}",otherUserEmail,money).with(user("valid@gmail.com")))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
+        Integer money = 100;
+        String otherUserEmail = "aaaa@gmail.com";
+
+        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}", otherUserEmail, money))
+                .andExpect(status().isUnauthorized());
+    }
+
+
+
+
 
 
 }

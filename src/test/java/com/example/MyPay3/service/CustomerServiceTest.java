@@ -12,22 +12,27 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
 
+@SpringBootTest
 class CustomerServiceTest {
 
-    @InjectMocks
-    private CustomerService customerService;
-
-    @Mock
+    @MockBean
     private CustomerRepo customerRepo;
 
-    @Mock
+    @MockBean
     private WalletRepo walletRepo;
+
+   @InjectMocks
+    private CustomerService customerService;
+
+
 
     @BeforeEach
     public void setup() {
@@ -75,5 +80,60 @@ class CustomerServiceTest {
         Mockito.when(customerRepo.save(customer)).thenReturn(updatedWalletCustomer);
         assertEquals(customerService.addMoneyToCustomerWallet(customer.getEmail(),money),updatedWalletCustomer);
     }
+
+    @Test
+    public void expectsToThrowExceptionWhenAddingMoneyToInvalidReciever(){
+
+        Integer money = 100;
+        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+        Wallet wallet = new Wallet();
+        wallet.setBalance(200);
+        customer.setWallet(wallet);
+        String invalidEmail = "invalid@gmail.com";
+        Mockito.when(customerRepo.findByEmail(invalidEmail)).thenReturn(null);
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,() -> {
+            customerService.addMoneyToOtherUserWallet(customer.getEmail(), invalidEmail,money);
+        });
+        assertEquals("Invalid receiver's email address", thrown.getMessage());
+    }
+
+    @Test
+    public void expectsToThrowExceptionWhenAddingMoneyToCustomerWithInsufficientAmountInCustomerWallet(){
+        Integer money = 500;
+        Customer sender = new Customer("mohit", "m@gmail.com", "1234");
+        Wallet wallet = new Wallet();
+        wallet.setBalance(200);
+        sender.setWallet(wallet);
+        Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
+        Wallet receiverWallet = new Wallet();
+        receiverWallet.setBalance(200);
+        receiver.setWallet(receiverWallet);
+        Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
+        Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,() -> {
+            customerService.addMoneyToOtherUserWallet(sender.getEmail(), receiver.getEmail(),money);
+        });
+        assertEquals("Insufficient amount to transfer", thrown.getMessage());
+
+    }
+
+    @Test
+    public void expectsToAddMoneyToReceiverAccount(){
+        Integer money = 500;
+        Customer sender = new Customer("mohit", "m@gmail.com", "1234");
+        Wallet wallet = new Wallet();
+        wallet.setBalance(1000);
+        sender.setWallet(wallet);
+        Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
+        Wallet receiverWallet = new Wallet();
+        receiverWallet.setBalance(200);
+        receiver.setWallet(receiverWallet);
+        Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
+        Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
+        assertEquals("Money transfer successfull", customerService.addMoneyToOtherUserWallet(sender.getEmail(),receiver.getEmail(), money));
+        assertEquals(200 + money, receiver.getWallet().getBalance());
+    }
+
+
 
 }

@@ -49,6 +49,17 @@ public class CustomerController {
         return customerService.withdrawMoneyFromCustomerWallet(email,money);
     }
 
+    @PutMapping("/customer/addmoney/{otherUserEmail}/{money}")
+    public Customer addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal String email, @PathVariable("otherUserEmail") String otherUserEmail, @PathVariable("money") Integer money){
+
+        Customer otherCustomer = customerRepo.findByEmail(otherUserEmail);
+        if(otherCustomer == null) {
+            throw new IllegalArgumentException("Invalid receiver's email address");
+        }
+        return new Customer();
+
+    }
+
 
 
 
