@@ -43,13 +43,13 @@ public class CustomerController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PutMapping("/customer/withdraw/{money}")
+    @PutMapping("/customer/withdraw")
     public ResponseEntity<Customer> withDrawMoneyFromCustomerHandler(@AuthenticationPrincipal(expression = "username") String email, @RequestBody MoneyDTO moneyDTO){
         Customer response = customerService.withdrawMoneyFromCustomerWallet(email,moneyDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PutMapping("/customer/addmoney/{otherUserEmail}/{money}")
+    @PutMapping("/customer/addmoney/{otherUserEmail}")
     public ResponseEntity<MoneyTransfer> addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("otherUserEmail") String otherUserEmail, @RequestBody MoneyDTO moneyDTO) {
         MoneyTransfer response = customerService.addMoneyToOtherUserWallet(email, otherUserEmail, moneyDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -60,6 +60,7 @@ public class CustomerController {
         Customer response = customerRepo.findByEmail(email);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
 
 

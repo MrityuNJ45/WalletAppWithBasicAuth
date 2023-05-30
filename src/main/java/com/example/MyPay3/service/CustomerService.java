@@ -1,6 +1,7 @@
 package com.example.MyPay3.service;
 
 import com.example.MyPay3.exceptions.CustomerException;
+import com.example.MyPay3.exceptions.TransactionException;
 import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.repository.TransactionRepo;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.number.money.MonetaryAmountFormatter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CustomerService {
@@ -89,6 +92,14 @@ public class CustomerService {
         transactionRepo.save(transaction);
         return new MoneyTransfer(true);
 
+    }
+
+    public List<Transaction> getTransactionHistoryByUserId(Integer userId) {
+        List<Transaction> transactions = transactionRepo.findBySenderIdOrReceiverId(userId, userId);
+        if(transactions.size() == 0) {
+            throw new TransactionException(HttpStatus.NOT_FOUND, "No transactions found");
+        }
+        return transactions;
     }
 
 
