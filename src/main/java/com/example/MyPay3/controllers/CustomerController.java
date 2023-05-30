@@ -3,17 +3,17 @@ package com.example.MyPay3.controllers;
 import com.example.MyPay3.models.Customer;
 import com.example.MyPay3.models.MoneyDTO;
 import com.example.MyPay3.models.MoneyTransfer;
+import com.example.MyPay3.models.Transaction;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.service.CustomerService;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class CustomerController {
@@ -62,6 +62,11 @@ public class CustomerController {
     }
 
 
+    @GetMapping("/transactions/get/all")
+    public ResponseEntity<List<Transaction>> getAllTransactionsOfUser(@AuthenticationPrincipal(expression = "username") String email) {
+        List<Transaction> transactions = customerService.getTransactionHistoryByUserEmail(email);
+        return new ResponseEntity<>(transactions, HttpStatus.OK);
+    }
 
 
 

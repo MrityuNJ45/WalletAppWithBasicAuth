@@ -8,7 +8,6 @@ import com.example.MyPay3.repository.TransactionRepo;
 import com.example.MyPay3.repository.WalletRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.number.money.MonetaryAmountFormatter;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -94,8 +93,10 @@ public class CustomerService {
 
     }
 
-    public List<Transaction> getTransactionHistoryByUserId(Integer userId) {
-        List<Transaction> transactions = transactionRepo.findBySenderIdOrReceiverId(userId, userId);
+    public List<Transaction> getTransactionHistoryByUserEmail(String email) {
+        Customer customer = customerRepo.findByEmail(email);
+        Integer customerId = customer.getCustomerId();
+        List<Transaction> transactions = transactionRepo.findBySenderIdOrReceiverId(customerId, customerId);
         if(transactions.size() == 0) {
             throw new TransactionException(HttpStatus.NOT_FOUND, "No transactions found");
         }

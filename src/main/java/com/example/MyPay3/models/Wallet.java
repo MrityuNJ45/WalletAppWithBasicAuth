@@ -21,7 +21,7 @@ import java.util.List;
 @Builder
 public class Wallet {
 
-    //private final Double INITIAL_AMOUNT = 0.0;
+    private final Double INITIAL_AMOUNT = 0.0;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer walletId;
@@ -31,7 +31,7 @@ public class Wallet {
     @Enumerated(EnumType.STRING)
     private Currency currency;
 
-    private Double balance = 0.0;
+    private Double balance = INITIAL_AMOUNT;
 
     public Wallet(Integer walletId) {
         this.walletId = walletId;
