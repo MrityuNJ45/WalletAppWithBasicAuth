@@ -70,32 +70,32 @@ class CustomerControllerTest {
         this.mockMvc.perform(post("/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
-                        .andExpect(status().isOk()); // isCreated
+                        .andExpect(status().isCreated());
 
     }
-//
-//    @Test
-//    public void expectsToGiveBadRequestWhenInvalidCustomerIsPosted() throws Exception {
-//
-//        Customer customer = null;
-//
-//        this.mockMvc.perform(post("/customers")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(new ObjectMapper().writeValueAsString(customer)))
-//                .andExpect(status().isBadRequest());
-//
-//    }
-//
-//    @Test
-//    public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
-//
-//        Double money = 100.0;
-//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-//        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-//        Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
-//        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
-//
-//    }
+
+    @Test
+    public void expectsToGiveBadRequestWhenInvalidCustomerIsPosted() throws Exception {
+
+        Customer customer = null;
+
+        this.mockMvc.perform(post("/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(customer)))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
+
+        Double money = 100.0;
+        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
+        Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
+        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
+
+    }
 //
 //    @Test
 //    public void expectsToGiveStatus403IfInvalidUser() throws Exception {

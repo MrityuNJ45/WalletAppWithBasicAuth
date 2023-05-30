@@ -66,7 +66,7 @@ public class CustomerService {
     }
 
     @Transactional
-    public MoneyTransfer addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, MoneyDTO moneyDTO) throws IllegalStateException{
+    public MoneyTransfer addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, MoneyDTO moneyDTO){
         Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
 
         if(recievingCustomer == null) {
