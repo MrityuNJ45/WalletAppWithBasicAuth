@@ -135,20 +135,23 @@ class CustomerControllerTest {
 
         MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
         String otherUserEmail = "validReceiver@gmail.com";
-        Customer customer = new Customer();
-        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}",otherUserEmail,money).with(user("valid@gmail.com")))
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}",otherUserEmail).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(moneyToSend)).with(user("valid@gmail.com")))
                 .andExpect(status().isOk());
 
     }
-//
-//    @Test
-//    public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
-//        Double money = 100.0;
-//        String otherUserEmail = "aaaa@gmail.com";
-//
-//        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}", otherUserEmail, money))
-//                .andExpect(status().isUnauthorized());
-//    }
+
+    @Test
+    public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
+        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        String otherUserEmail = "aaaa@gmail.com";
+        ObjectMapper objectMapper = new ObjectMapper();
+        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}", otherUserEmail).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(moneyToSend)))
+                .andExpect(status().isUnauthorized());
+    }
+
 
 
 
