@@ -23,8 +23,7 @@ public class Customer {
 
     private String email;
 
-    @Enumerated(EnumType.STRING)
-    private Currency currency;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 

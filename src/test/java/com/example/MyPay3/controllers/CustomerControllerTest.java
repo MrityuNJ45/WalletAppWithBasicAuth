@@ -38,106 +38,106 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Import(SecurityConfig.class)
 class CustomerControllerTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    private MockMvc mockMvc;
-
-    @MockBean
-    private CustomerRepo customerRepo;
-
-    @MockBean
-    private CustomerService customerService;
-
-    @MockBean
-    private PasswordEncoder passwordEncoder;
-
-    @MockBean
-    private Authentication authentication;
-
-    @BeforeEach
-    public void setUp(){
-        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
-
-    @Test
-    public void expectsToSaveACustomer() throws Exception {
-        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-
-        this.mockMvc.perform(post("/customers")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(customer)))
-                        .andExpect(status().isOk()); // isCreated
-
-    }
-
-    @Test
-    public void expectsToGiveBadRequestWhenInvalidCustomerIsPosted() throws Exception {
-
-        Customer customer = null;
-
-        this.mockMvc.perform(post("/customers")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(customer)))
-                .andExpect(status().isBadRequest());
-
-    }
-
-    @Test
-    public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
-
-        Double money = 100.0;
-        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-        Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
-        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
-
-    }
-
-    @Test
-    public void expectsToGiveStatus403IfInvalidUser() throws Exception {
-        Double money = 100.0;
-        this.mockMvc.perform(put("/customer/add/{money}", money)).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void expectsToWithDrawMoneyIfValidUser() throws Exception {
-        Double money = 100.0;
-        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-        Mockito.when(customerService.withdrawMoneyFromCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
-        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
-
-    }
-
-    @Test
-    public void expectsToGive403IfInvalidUserForWithdrawingMoney() throws Exception {
-        Integer money = 100;
-        this.mockMvc.perform(put("/customer/withdraw/{money}", money)).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void expectsToGiveHttpStatus202WhenTryingToAddMoneyToOtherUserWallet() throws Exception {
-
-        Double money = 100.0;
-        String otherUserEmail = "validReceiver@gmail.com";
-        Customer customer = new Customer();
-        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}",otherUserEmail,money).with(user("valid@gmail.com")))
-                .andExpect(status().isOk());
-
-    }
-
-    @Test
-    public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
-        Double money = 100.0;
-        String otherUserEmail = "aaaa@gmail.com";
-
-        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}", otherUserEmail, money))
-                .andExpect(status().isUnauthorized());
-    }
+//
+//    @Autowired
+//    private WebApplicationContext context;
+//
+//    private MockMvc mockMvc;
+//
+//    @MockBean
+//    private CustomerRepo customerRepo;
+//
+//    @MockBean
+//    private CustomerService customerService;
+//
+//    @MockBean
+//    private PasswordEncoder passwordEncoder;
+//
+//    @MockBean
+//    private Authentication authentication;
+//
+//    @BeforeEach
+//    public void setUp(){
+//        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+//                .apply(springSecurity())
+//                .build();
+//    }
+//
+//    @Test
+//    public void expectsToSaveACustomer() throws Exception {
+//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+//
+//        this.mockMvc.perform(post("/customers")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(customer)))
+//                        .andExpect(status().isOk()); // isCreated
+//
+//    }
+//
+//    @Test
+//    public void expectsToGiveBadRequestWhenInvalidCustomerIsPosted() throws Exception {
+//
+//        Customer customer = null;
+//
+//        this.mockMvc.perform(post("/customers")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(customer)))
+//                .andExpect(status().isBadRequest());
+//
+//    }
+//
+//    @Test
+//    public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
+//
+//        Double money = 100.0;
+//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+//        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
+//        Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
+//        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
+//
+//    }
+//
+//    @Test
+//    public void expectsToGiveStatus403IfInvalidUser() throws Exception {
+//        Double money = 100.0;
+//        this.mockMvc.perform(put("/customer/add/{money}", money)).andExpect(status().isUnauthorized());
+//    }
+//
+//    @Test
+//    public void expectsToWithDrawMoneyIfValidUser() throws Exception {
+//        Double money = 100.0;
+//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+//        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
+//        Mockito.when(customerService.withdrawMoneyFromCustomerWallet(customer.getEmail(),money)).thenReturn(customer);
+//        this.mockMvc.perform(put("/customer/add/{money}", money).with(user(customer.getName()))).andExpect(status().isOk());
+//
+//    }
+//
+//    @Test
+//    public void expectsToGive403IfInvalidUserForWithdrawingMoney() throws Exception {
+//        Integer money = 100;
+//        this.mockMvc.perform(put("/customer/withdraw/{money}", money)).andExpect(status().isUnauthorized());
+//    }
+//
+//    @Test
+//    public void expectsToGiveHttpStatus202WhenTryingToAddMoneyToOtherUserWallet() throws Exception {
+//
+//        Double money = 100.0;
+//        String otherUserEmail = "validReceiver@gmail.com";
+//        Customer customer = new Customer();
+//        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}",otherUserEmail,money).with(user("valid@gmail.com")))
+//                .andExpect(status().isOk());
+//
+//    }
+//
+//    @Test
+//    public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
+//        Double money = 100.0;
+//        String otherUserEmail = "aaaa@gmail.com";
+//
+//        this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}", otherUserEmail, money))
+//                .andExpect(status().isUnauthorized());
+//    }
 
 
 

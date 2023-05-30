@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class CustomerController {
 
+/*
     @Autowired
     private CustomerRepo customerRepo;
 
@@ -55,6 +56,7 @@ public class CustomerController {
     }
 
 
+*/
 
 
 
