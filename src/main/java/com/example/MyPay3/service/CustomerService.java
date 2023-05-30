@@ -1,76 +1,95 @@
 package com.example.MyPay3.service;
 
-import com.example.MyPay3.models.Customer;
-import com.example.MyPay3.models.Wallet;
+import com.example.MyPay3.exceptions.CustomerException;
+import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
+import com.example.MyPay3.repository.TransactionRepo;
 import com.example.MyPay3.repository.WalletRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.number.money.MonetaryAmountFormatter;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomerService {
 
-//
-//    @Autowired
-//    private CustomerRepo customerRepo;
-//
-//    @Autowired
-//    private WalletRepo walletRepo;
-//    public Customer registerCustomer(Customer customer) {
-//
-//        Wallet wallet = new Wallet();
-//        Customer savingCustomer = Customer.builder().customerId(customer.getCustomerId()).wallet(wallet).name(customer.getName())
-//                .password(customer.getPassword()).email(customer.getEmail()).build();
-//        customer.setWallet(wallet);
-//        walletRepo.save(wallet);
-//        return customerRepo.save(savingCustomer);
-//
-//    }
-//
-//    public Customer addMoneyToCustomerWallet(String email, Double money){
-//
-//        Customer customer = customerRepo.findByEmail(email);
-//        Wallet wallet = customer.getWallet();
-//        wallet.setBalance(wallet.getBalance() + money);
-//        walletRepo.save(wallet);
-//        return customerRepo.save(customer);
-//    }
-//
-//    public Customer withdrawMoneyFromCustomerWallet(String email,Double money) throws IllegalStateException{
-//
-//        Customer customer = customerRepo.findByEmail(email);
-//        Wallet wallet = customer.getWallet();
-//        if(wallet.getBalance() < money){
-//            throw new IllegalStateException("Insufficient amount to withdraw");
-//        }
-//        wallet.setBalance(wallet.getBalance() - money);
-//        walletRepo.save(wallet);
-//        return customerRepo.save(customer);
-//
-//    }
-//
-//    public String addMoneyToOtherUserWallet(String senderEmail, String receiverEmail,Double money) throws IllegalStateException{
-//        Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
-//        if(recievingCustomer == null){
-//            throw new IllegalStateException("Invalid receiver's email address");
-//        }
-//
-//        Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
-//        Wallet senderWallet = sendingCustomer.getWallet();
-//        Wallet receiverWallet = recievingCustomer.getWallet();
-//        if(senderWallet.getBalance() < money){
-//            throw new IllegalStateException("Insufficient amount to transfer");
-//        }
-//
-//        double amountInRecieverCurrency = sendingCustomer.getCurrency().convert(money,recievingCustomer.getCurrency());
-//        receiverWallet.setBalance(receiverWallet.getBalance() + amountInRecieverCurrency);
-//        senderWallet.setBalance(senderWallet.getBalance() - money);
-//        walletRepo.save(receiverWallet);
-//        walletRepo.save(senderWallet);
-//        customerRepo.save(sendingCustomer);
-//        customerRepo.save(recievingCustomer);
-//        return "Money transfer successfull";
-//
-//    }
+
+    @Autowired
+    private CustomerRepo customerRepo;
+
+    @Autowired
+    private WalletRepo walletRepo;
+
+    @Autowired
+    private TransactionRepo transactionRepo;
+
+    @Transactional
+    public Customer registerCustomer(Customer customer) {
+
+        Wallet wallet = new Wallet();
+        Customer savingCustomer = Customer.builder().customerId(customer.getCustomerId()).wallet(wallet).name(customer.getName())
+                .password(customer.getPassword()).email(customer.getEmail()).build();
+
+        walletRepo.save(wallet);
+        return customerRepo.save(savingCustomer);
+
+    }
+
+    @Transactional
+    public Customer addMoneyToCustomerWallet(String email, MoneyDTO moneyDTO){
+
+        Customer customer = customerRepo.findByEmail(email);
+        Wallet wallet = customer.getWallet();
+        Wallet updatedWallet = wallet.deposit(moneyDTO);
+        Transaction transaction = Transaction.builder().senderId(customer.getCustomerId())
+                .receiverId(customer.getCustomerId()).amount(moneyDTO.getAmount())
+                .build();
+        transactionRepo.save(transaction);
+        walletRepo.save(updatedWallet);
+        return customerRepo.save(customer);
+
+    }
+
+    public Customer withdrawMoneyFromCustomerWallet(String email, MoneyDTO moneyDTO) throws IllegalStateException{
+
+        Customer customer = customerRepo.findByEmail(email);
+        Wallet wallet = customer.getWallet();
+        Wallet updatedWallet = wallet.withdraw(moneyDTO);
+        Transaction transaction = Transaction.builder().senderId(customer.getCustomerId())
+                .receiverId(customer.getCustomerId()).amount(moneyDTO.getAmount())
+                .build();
+        transactionRepo.save(transaction);
+        walletRepo.save(updatedWallet);
+        return customerRepo.save(customer);
+
+    }
+
+    @Transactional
+    public MoneyTransfer addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, MoneyDTO moneyDTO) throws IllegalStateException{
+        Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
+
+        if(recievingCustomer == null) {
+            throw new CustomerException(HttpStatus.NOT_FOUND, "Invalid receiving customer email");
+        }
+
+        Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
+        Wallet senderWallet = sendingCustomer.getWallet();
+        Wallet receiverWallet = recievingCustomer.getWallet();
+        senderWallet = senderWallet.withdraw(moneyDTO);
+        receiverWallet = receiverWallet.deposit(moneyDTO);
+
+        walletRepo.save(senderWallet);
+        walletRepo.save(receiverWallet);
+        customerRepo.save(sendingCustomer);
+        customerRepo.save(recievingCustomer);
+        Transaction transaction = Transaction.builder().senderId(sendingCustomer.getCustomerId())
+                .receiverId(recievingCustomer.getCustomerId()).amount(moneyDTO.getAmount())
+                .build();
+        transactionRepo.save(transaction);
+        return new MoneyTransfer(true);
+
+    }
+
 
 }

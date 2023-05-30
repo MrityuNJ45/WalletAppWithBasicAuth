@@ -1,9 +1,9 @@
 package com.example.MyPay3.service;
 
-import com.example.MyPay3.models.Currency;
-import com.example.MyPay3.models.Customer;
-import com.example.MyPay3.models.Wallet;
+import com.example.MyPay3.exceptions.WalletException;
+import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
+import com.example.MyPay3.repository.TransactionRepo;
 import com.example.MyPay3.repository.WalletRepo;
 import jakarta.annotation.security.RunAs;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,141 +24,140 @@ import static org.mockito.ArgumentMatchers.any;
 @SpringBootTest
 class CustomerServiceTest {
 
-//    @MockBean
-//    private CustomerRepo customerRepo;
-//
-//    @MockBean
-//    private WalletRepo walletRepo;
-//
-//   @InjectMocks
-//    private CustomerService customerService;
-//
-//
-//
-//    @BeforeEach
-//    public void setup() {
-//        MockitoAnnotations.openMocks(this);
-//    }
-//
-//    @Test
-//    public void expectsToSaveCustomer(){
-//
-//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-//        Wallet wallet = new Wallet();
-//        Customer savedCustomer = new Customer(customer.getName(), customer.getEmail(), customer.getPassword());
-//        savedCustomer.setWallet(wallet);
-//        Mockito.when(customerRepo.save(customer)).thenReturn(savedCustomer);
-//        assertEquals(customerService.registerCustomer(customer), savedCustomer);
-//
-//    }
-//
-//    @Test
-//    public void expectsToAddMoneyToCustomerWallet(){
-//        Double money = 100.0;
-//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-//        customer.setWallet(new Wallet());
-//        Customer updatedWalletCustomer = new Customer(customer.getName(), customer.getEmail(), customer.getPassword());
-//        Wallet updatedWallet = customer.getWallet();
-//        updatedWallet.setBalance(updatedWallet.getBalance() + money);
-//        updatedWalletCustomer.setWallet(updatedWallet);
-//        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-//        Mockito.when(customerRepo.save(customer)).thenReturn(updatedWalletCustomer);
-//        assertEquals(customerService.addMoneyToCustomerWallet(customer.getEmail(),money),updatedWalletCustomer);
-//    }
-//
-//    @Test
-//    public void expectsToWithDrawMoneyFromCustomerWallet(){
-//        Double money = 100.0;
-//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-//        Wallet wallet = new Wallet();
-//        wallet.setBalance(200.0);
-//        customer.setWallet(wallet);
-//        Customer updatedWalletCustomer = new Customer(customer.getName(), customer.getEmail(), customer.getPassword());
-//        Wallet updatedWallet = customer.getWallet();
-//        updatedWallet.setBalance(updatedWallet.getBalance() - money);
-//        updatedWalletCustomer.setWallet(updatedWallet);
-//        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
-//        Mockito.when(customerRepo.save(customer)).thenReturn(updatedWalletCustomer);
-//        assertEquals(customerService.addMoneyToCustomerWallet(customer.getEmail(),money),updatedWalletCustomer);
-//    }
-//
-//    @Test
-//    public void expectsToThrowExceptionWhenAddingMoneyToInvalidReciever(){
-//
-//        Double money = 100.0;
-//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-//        Wallet wallet = new Wallet();
-//        wallet.setBalance(200.0);
-//        customer.setWallet(wallet);
-//        String invalidEmail = "invalid@gmail.com";
-//        Mockito.when(customerRepo.findByEmail(invalidEmail)).thenReturn(null);
-//        IllegalStateException thrown = assertThrows(IllegalStateException.class,() -> {
-//            customerService.addMoneyToOtherUserWallet(customer.getEmail(), invalidEmail,money);
-//        });
-//        assertEquals("Invalid receiver's email address", thrown.getMessage());
-//    }
-//
-//    @Test
-//    public void expectsToThrowExceptionWhenAddingMoneyToCustomerWithInsufficientAmountInCustomerWallet(){
-//        Double money = 500.0;
-//        Customer sender = new Customer("mohit", "m@gmail.com", "1234");
-//        Wallet wallet = new Wallet();
-//        wallet.setBalance(200.0);
-//        sender.setWallet(wallet);
-//        Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
-//        Wallet receiverWallet = new Wallet();
-//        receiverWallet.setBalance(200.0);
-//        receiver.setWallet(receiverWallet);
-//        Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
-//        Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
-//        IllegalStateException thrown = assertThrows(IllegalStateException.class,() -> {
-//            customerService.addMoneyToOtherUserWallet(sender.getEmail(), receiver.getEmail(),money);
-//        });
-//        assertEquals("Insufficient amount to transfer", thrown.getMessage());
-//
-//    }
-//
-//    @Test
-//    public void expectsToAddMoneyToReceiverAccount(){
-//        Double money = 500.0;
-//        Customer sender = new Customer("mohit", "m@gmail.com", "1234");
-//        Wallet wallet = new Wallet();
-//        sender.setCurrency(Currency.INR);
-//        wallet.setBalance(1000.0);
-//        sender.setWallet(wallet);
-//        Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
-//        receiver.setCurrency(Currency.INR);
-//        Wallet receiverWallet = new Wallet();
-//        receiverWallet.setBalance(200.0);
-//        receiver.setWallet(receiverWallet);
-//        Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
-//        Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
-//        assertEquals("Money transfer successfull", customerService.addMoneyToOtherUserWallet(sender.getEmail(),receiver.getEmail(), money));
-//        assertEquals(200 + money, receiver.getWallet().getBalance());
-//    }
-//
-//
-//    @Test
-//    public void expectsToAddMoneyToReceiverWhenSenderAndReceiverCurrencyAreDifferent(){
-//        Double oneDollar = 1.0;
-//        Customer sender = new Customer("mohit", "m@gmail.com", "1234");
-//        Wallet wallet = new Wallet();
-//        sender.setCurrency(Currency.USD);
-//        wallet.setBalance(10.0);
-//        sender.setWallet(wallet);
-//        Customer receiver = new Customer("mohit2", "m2@gmail.com", "1234");
-//        receiver.setCurrency(Currency.INR);
-//        Wallet receiverWallet = new Wallet();
-//        receiverWallet.setBalance(200.0);
-//        receiver.setWallet(receiverWallet);
-//        Mockito.when(customerRepo.findByEmail(sender.getEmail())).thenReturn(sender);
-//        Mockito.when(customerRepo.findByEmail(receiver.getEmail())).thenReturn(receiver);
-//        assertEquals("Money transfer successfull", customerService.addMoneyToOtherUserWallet(sender.getEmail(),receiver.getEmail(), oneDollar));
-//        assertEquals(200.0 + 73.03, receiver.getWallet().getBalance());
-//
-//    }
+    @Mock
+    private CustomerRepo customerRepo;
+
+    @Mock
+    private TransactionRepo transactionRepo;
+
+    @Mock
+    private Wallet wallet;
+    @Mock
+    private WalletRepo walletRepo;
+
+    @InjectMocks
+    private CustomerService customerService;
+
+    @Test
+    public void expectsToSaveACustomer() {
+
+        Wallet wallet = new Wallet();
+        Customer customer = Customer.builder().wallet(wallet).build();
+
+        Mockito.when(walletRepo.save(Mockito.any(Wallet.class))).thenReturn(wallet);
+        Mockito.when(customerRepo.save(Mockito.any(Customer.class))).thenReturn(customer);
+
+        Customer result = customerService.registerCustomer(customer);
+
+        assertEquals(customer, result);
+        Mockito.verify(walletRepo, Mockito.times(1)).save(Mockito.any(Wallet.class));
+        Mockito.verify(customerRepo, Mockito.times(1)).save(Mockito.any(Customer.class));
+    }
 
 
+    @Test
+    public void expectsToAddMoneyToCustomerWallet() {
+        String email = "test@example.com";
+        MoneyDTO moneyDTO = new MoneyDTO(100.0, Currency.INR);
+        Wallet wallet = Wallet.builder().balance(10.0).currency(Currency.INR).build();
+        Customer customer = Customer.builder().wallet(wallet).build();
+        Wallet updatedWallet = wallet.deposit(moneyDTO);
+        Mockito.when(customerRepo.findByEmail(email)).thenReturn(customer);
+
+        Mockito.when(walletRepo.save(Mockito.any(Wallet.class))).thenReturn(updatedWallet);
+        Mockito.when(customerRepo.save(Mockito.any(Customer.class))).thenReturn(customer);
+
+        Customer result = customerService.addMoneyToCustomerWallet(email, moneyDTO);
+
+        assertEquals(customer, result);
+        Mockito.verify(customerRepo, Mockito.times(1)).findByEmail(email);
+
+        Mockito.verify(walletRepo, Mockito.times(1)).save(Mockito.any(Wallet.class));
+        Mockito.verify(customerRepo, Mockito.times(1)).save(Mockito.any(Customer.class));
+    }
+
+    @Test
+    public void expectsToWithdrawMoneyFromCustomerWallet() {
+
+            String email = "test@example.com";
+            MoneyDTO moneyDTO = new MoneyDTO(100.0, Currency.INR);
+            Wallet wallet = Wallet.builder().balance(1000.0).currency(Currency.INR).build();
+            Customer customer = Customer.builder().wallet(wallet).build();
+            Wallet updatedWallet = wallet.deposit(moneyDTO);
+
+            Mockito.when(customerRepo.findByEmail(email)).thenReturn(customer);
+
+            Mockito.when(walletRepo.save(Mockito.any(Wallet.class))).thenReturn(updatedWallet);
+            Mockito.when(customerRepo.save(Mockito.any(Customer.class))).thenReturn(customer);
+
+            Customer result = customerService.withdrawMoneyFromCustomerWallet(email, moneyDTO);
+
+            assertEquals(customer, result);
+            Mockito.verify(customerRepo, Mockito.times(1)).findByEmail(email);
+
+            Mockito.verify(walletRepo, Mockito.times(1)).save(Mockito.any(Wallet.class));
+            Mockito.verify(customerRepo, Mockito.times(1)).save(Mockito.any(Customer.class));
+
+    }
+
+
+    @Test
+    public void expectsToAddMoneyToAnotherPerson() {
+        // Mock data
+        String senderEmail = "sender@example.com";
+        String receiverEmail = "receiver@example.com";
+        MoneyDTO moneyToSend = new MoneyDTO(10.0,Currency.INR);
+
+        Wallet senderWallet = Wallet.builder().balance(120.0).currency(Currency.INR).build();
+
+        Customer senderCustomer = Customer.builder().email(senderEmail).wallet(senderWallet).build();
+        // Mock receiver customer
+        Wallet receiverWallet = Wallet.builder().balance(120.0).currency(Currency.INR).build();
+        Customer receiverCustomer = Customer.builder().email(receiverEmail).wallet(receiverWallet).build();        // Mock customerRepo.findByEmail()
+        Mockito.when(customerRepo.findByEmail(senderEmail)).thenReturn(senderCustomer);
+        Mockito.when(customerRepo.findByEmail(receiverEmail)).thenReturn(receiverCustomer);
+
+        // Invoke the method
+        MoneyTransfer actual = customerService.addMoneyToOtherUserWallet(senderEmail, receiverEmail, moneyToSend);
+
+        // Assertions
+        senderWallet = senderWallet.deposit(moneyToSend);
+        receiverWallet = receiverWallet.withdraw(moneyToSend);
+
+        Mockito.verify(walletRepo, Mockito.times(1)).save(senderWallet);
+        Mockito.verify(walletRepo, Mockito.times(1)).save(receiverWallet);
+        Mockito.verify(customerRepo, Mockito.times(1)).save(senderCustomer);
+        Mockito.verify(customerRepo, Mockito.times(1)).save(receiverCustomer);
+        Mockito.verify(transactionRepo, Mockito.times(1)).save(Mockito.any(Transaction.class));
+        MoneyTransfer expected = new MoneyTransfer(true);
+        assertEquals(expected, actual);
+    }
+
+
+    @Test
+    public void expectsToThrowExceptionWhenTransferringToAnotherPersonWhileReceivingPersonIsHavingInsufficientBalance() {
+        // Mock data
+        String senderEmail = "sender@example.com";
+        String receiverEmail = "receiver@example.com";
+        MoneyDTO moneyToSend = new MoneyDTO(10.0,Currency.INR);
+
+        Wallet senderWallet = Wallet.builder().balance(5.0).currency(Currency.INR).build();
+
+        Customer senderCustomer = Customer.builder().email(senderEmail).wallet(senderWallet).build();
+        // Mock receiver customer
+        Wallet receiverWallet = Wallet.builder().balance(120.0).currency(Currency.INR).build();
+        Customer receiverCustomer = Customer.builder().email(receiverEmail).wallet(receiverWallet).build();
+        Mockito.when(customerRepo.findByEmail(senderEmail)).thenReturn(senderCustomer);
+        Mockito.when(customerRepo.findByEmail(receiverEmail)).thenReturn(receiverCustomer);
+
+        // Invoke the method
+        WalletException thrown = assertThrows(WalletException.class, () -> {
+            customerService.addMoneyToOtherUserWallet(senderEmail, receiverEmail, moneyToSend);
+        }) ;
+
+        assertEquals(thrown.getMessage(), "Insufficient balance");
+
+    }
 
 
 }

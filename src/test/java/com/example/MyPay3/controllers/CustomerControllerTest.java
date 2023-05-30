@@ -38,41 +38,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Import(SecurityConfig.class)
 class CustomerControllerTest {
-//
-//    @Autowired
-//    private WebApplicationContext context;
-//
-//    private MockMvc mockMvc;
-//
-//    @MockBean
-//    private CustomerRepo customerRepo;
-//
-//    @MockBean
-//    private CustomerService customerService;
-//
-//    @MockBean
-//    private PasswordEncoder passwordEncoder;
-//
-//    @MockBean
-//    private Authentication authentication;
-//
-//    @BeforeEach
-//    public void setUp(){
-//        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-//                .apply(springSecurity())
-//                .build();
-//    }
-//
-//    @Test
-//    public void expectsToSaveACustomer() throws Exception {
-//        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
-//
-//        this.mockMvc.perform(post("/customers")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(new ObjectMapper().writeValueAsString(customer)))
-//                        .andExpect(status().isOk()); // isCreated
-//
-//    }
+
+    @Autowired
+    private WebApplicationContext context;
+
+    private MockMvc mockMvc;
+
+    @MockBean
+    private CustomerRepo customerRepo;
+
+    @MockBean
+    private CustomerService customerService;
+
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private Authentication authentication;
+
+    @BeforeEach
+    public void setUp(){
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
+
+    @Test
+    public void expectsToSaveACustomer() throws Exception {
+        Customer customer = new Customer("mohit", "m@gmail.com", "1234");
+
+        this.mockMvc.perform(post("/customers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(customer)))
+                        .andExpect(status().isOk()); // isCreated
+
+    }
 //
 //    @Test
 //    public void expectsToGiveBadRequestWhenInvalidCustomerIsPosted() throws Exception {
