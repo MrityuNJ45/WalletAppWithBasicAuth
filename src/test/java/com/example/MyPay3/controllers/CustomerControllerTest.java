@@ -70,7 +70,7 @@ class CustomerControllerTest {
         this.mockMvc.perform(post("/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(customer)))
-                        .andExpect(status().isOk());
+                        .andExpect(status().isOk()); // isCreated
 
     }
 
@@ -123,8 +123,8 @@ class CustomerControllerTest {
     public void expectsToGiveHttpStatus202WhenTryingToAddMoneyToOtherUserWallet() throws Exception {
 
         Double money = 100.0;
-        String otherUserEmail = "aaaa@gmail.com";
-
+        String otherUserEmail = "validReceiver@gmail.com";
+        Customer customer = new Customer();
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}",otherUserEmail,money).with(user("valid@gmail.com")))
                 .andExpect(status().isOk());
 
@@ -138,6 +138,7 @@ class CustomerControllerTest {
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}/{money}", otherUserEmail, money))
                 .andExpect(status().isUnauthorized());
     }
+
 
 
 

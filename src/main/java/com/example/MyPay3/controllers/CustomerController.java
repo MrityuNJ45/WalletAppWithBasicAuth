@@ -33,29 +33,17 @@ public class CustomerController {
 
     @PutMapping("/customer/add/{money}")
     public Customer addMoneyToCustomerWallet(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("money") Double money){
-        Customer customer = customerRepo.findByEmail(email);
-        if(customer == null) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
+
         return customerService.addMoneyToCustomerWallet(email,money);
     }
 
     @PutMapping("/customer/withdraw/{money}")
     public Customer withDrawMoneyFromCustomerHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("money") Double money){
-        Customer customer = customerRepo.findByEmail(email);
-        if(customer == null) {
-            throw new BadCredentialsException("Invalid username or password");
-        }
         return customerService.withdrawMoneyFromCustomerWallet(email,money);
     }
 
     @PutMapping("/customer/addmoney/{otherUserEmail}/{money}")
     public String addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("otherUserEmail") String otherUserEmail, @PathVariable("money") Double money) throws IllegalArgumentException{
-
-        Customer otherCustomer = customerRepo.findByEmail(otherUserEmail);
-        if(otherCustomer == null) {
-            throw new IllegalArgumentException("Invalid receiver's email address");
-        }
 
         return customerService.addMoneyToOtherUserWallet(email, otherUserEmail, money);
 

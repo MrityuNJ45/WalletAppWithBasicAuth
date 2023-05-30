@@ -33,7 +33,7 @@ class CustomerUserDetailsServiceTest {
     public void expectsToGiveUserDetailsObject(){
 
         Customer customer = new Customer("morty", "m@gmail.com","1234" );
-        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
+        Mockito.when(customerRepo.findByEmail(customer.getEmail())).thenReturn(customer);
         UserDetails userDetails = customerUserDetailsService.loadUserByUsername(customer.getEmail());
         assertEquals(userDetails.getUsername(), customer.getEmail());
 
@@ -42,7 +42,7 @@ class CustomerUserDetailsServiceTest {
     @Test
     public void expectsToGiveException(){
         String invalidEmail = "invalid@gmail.com";
-        Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(null);
+        Mockito.when(customerRepo.findByEmail(invalidEmail)).thenReturn(null);
         BadCredentialsException thrown = assertThrows(BadCredentialsException.class,() -> {customerUserDetailsService.loadUserByUsername(invalidEmail);});
         assertEquals("User Details not found with this username: " + invalidEmail, thrown.getMessage());
     }

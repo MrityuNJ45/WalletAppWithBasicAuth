@@ -19,9 +19,11 @@ public class CustomerService {
     public Customer registerCustomer(Customer customer) {
 
         Wallet wallet = new Wallet();
+        Customer savingCustomer = Customer.builder().customerId(customer.getCustomerId()).wallet(wallet).name(customer.getName())
+                .password(customer.getPassword()).email(customer.getEmail()).currency(customer.getCurrency()).build();
         customer.setWallet(wallet);
         walletRepo.save(wallet);
-        return customerRepo.save(customer);
+        return customerRepo.save(savingCustomer);
 
     }
 
@@ -52,7 +54,7 @@ public class CustomerService {
         if(recievingCustomer == null){
             throw new IllegalStateException("Invalid receiver's email address");
         }
-        System.out.println(senderEmail);
+
         Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
         Wallet senderWallet = sendingCustomer.getWallet();
         Wallet receiverWallet = recievingCustomer.getWallet();
