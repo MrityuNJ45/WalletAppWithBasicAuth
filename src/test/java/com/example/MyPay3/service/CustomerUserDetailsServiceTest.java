@@ -40,7 +40,7 @@ class CustomerUserDetailsServiceTest {
     }
 
     @Test
-    public void expectsToGiveException(){
+    public void expectsToGiveExceptionForInvalidCredentials(){
         String invalidEmail = "invalid@gmail.com";
         Mockito.when(customerRepo.findByEmail(invalidEmail)).thenReturn(null);
         BadCredentialsException thrown = assertThrows(BadCredentialsException.class,() -> {customerUserDetailsService.loadUserByUsername(invalidEmail);});

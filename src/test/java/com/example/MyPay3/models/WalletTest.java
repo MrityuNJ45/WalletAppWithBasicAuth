@@ -33,7 +33,7 @@ class WalletTest {
             wallet.deposit(moneyDTO);
         }) ;
 
-        assertEquals(thrown.getMessage(), "reciver's wallet not associated with any currency");
+        assertEquals(thrown.getMessage(), "receiver's wallet not associated with any currency");
 
     }
 

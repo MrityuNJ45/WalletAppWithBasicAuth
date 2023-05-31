@@ -65,11 +65,11 @@ public class CustomerController {
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
-//    @PostMapping("/add/wallet/user")
-//    public ResponseEntity<Wallet> addWalletToUser(@AuthenticationPrincipal(expression = "username") String email, @RequestBody WalletDTO walletDTO) {
-//        //Wallet  wallet  = customerService.addWalletToUser(email, walletDTO);
-//        return new ResponseEntity<>(wallet, HttpStatus.CREATED);
-//    }
+    @PostMapping("/add/wallet/user")
+    public ResponseEntity<Wallet> addWalletToUser(@AuthenticationPrincipal(expression = "username") String email, @RequestBody Wallet wallet) {
+        Wallet walletReponse = customerService.addWalletToUser(email, wallet);
+        return new ResponseEntity<>(walletReponse, HttpStatus.CREATED);
+    }
 
 
 }

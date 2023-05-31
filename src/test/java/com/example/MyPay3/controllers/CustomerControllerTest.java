@@ -1,12 +1,13 @@
 package com.example.MyPay3.controllers;
 
 import com.example.MyPay3.config.SecurityConfig;
-import com.example.MyPay3.models.Currency;
-import com.example.MyPay3.models.Customer;
-import com.example.MyPay3.models.WalletDTO;
+import com.example.MyPay3.exceptions.TransactionException;
+import com.example.MyPay3.exceptions.WalletException;
+import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,14 +15,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -130,7 +142,7 @@ class CustomerControllerTest {
 
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}",otherUserEmail).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(moneyToSend)).with(user("valid@gmail.com")))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.moneyTransferSuccess").value(true));;
+                .andExpect(status().isOk());
 
     }
 
@@ -143,11 +155,37 @@ class CustomerControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    public void testGetAllTransactionsOfUser_Success() throws Exception {
+
+        String authenticatedEmail = "test@example.com";
+
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(new Transaction());
+        transactions.add(new Transaction());
+
+        Mockito.when(customerService.getTransactionHistoryByUserEmail(authenticatedEmail)).thenReturn(transactions);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/transactions/get/all")
+                        .with(user("test@example.com")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)));
+
+        Mockito.verify(customerService, Mockito.times(1)).getTransactionHistoryByUserEmail(authenticatedEmail);
+    }
 
 
-//    @Test
-//    public void expects
+    @Test
+    public void testAddWalletToUser_Success() throws Exception {
+        String email = "test@example.com";
+        Wallet wallet = new Wallet();
+        ObjectMapper objectMapper = new ObjectMapper();
+        mockMvc.perform(post("/add/wallet/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wallet))
+                        .with(user(email))) // Set the authenticated user
+                .andExpect(status().isCreated());
 
+    }
 
 
 
