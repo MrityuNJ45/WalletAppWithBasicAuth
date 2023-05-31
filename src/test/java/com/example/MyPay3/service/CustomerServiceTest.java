@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -201,6 +202,28 @@ class CustomerServiceTest {
 
         Mockito.when(customerRepo.findByEmail(Mockito.anyString())).thenReturn(customer);
         Mockito.when(customerRepo.save(Mockito.any(Customer.class))).thenReturn(walletAddedCustomer);
+        Mockito.when(walletRepo.save(Mockito.any(Wallet.class))).thenReturn(wallet);
+
+        Wallet result = customerService.addWalletToUser("test@example.com", wallet);
+
+        Mockito.verify(customerRepo, Mockito.times(1)).findByEmail("test@example.com");
+        Mockito.verify(customerRepo, Mockito.times(1)).save(Mockito.any(Customer.class));
+        Mockito.verify(walletRepo, Mockito.times(1)).save(Mockito.any(Wallet.class));
+
+        assertNotNull(result);
+        assertTrue(walletAddedCustomer.isWalletAdded());
+        assertEquals(wallet, result);
+    }
+
+    @Test
+    public void testAddWalletToUser_() {
+
+        Wallet wallet = new Wallet();
+        Customer customer = new Customer();
+        Customer walletAddedCustomer = new Customer(wallet);
+
+        Mockito.when(customerRepo.findByEmail(Mockito.anyString())).thenReturn(customer);
+        Mockito.when(customerRepo.save(Mockito.any(Customer.class))).thenThrow(new WalletException(HttpStatus.BAD_REQUEST, "Wallet"));
         Mockito.when(walletRepo.save(Mockito.any(Wallet.class))).thenReturn(wallet);
 
         Wallet result = customerService.addWalletToUser("test@example.com", wallet);

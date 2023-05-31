@@ -49,13 +49,5 @@ public class Customer {
         return true;
     }
 
-    @JsonIgnore
-    public Customer activateWallet(Customer customerDummyWithWallet) {
-        return new Customer(this.customerId, this.name, this.email, this.password, customerDummyWithWallet.wallet);
-    }
-
-
-
-
 
 }

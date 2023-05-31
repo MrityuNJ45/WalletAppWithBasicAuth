@@ -1,13 +1,14 @@
 package com.example.MyPay3.exceptions;
 
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 
+@Data
 public class WalletException extends RuntimeException {
-    private HttpStatus httpStatus;
-
-    public WalletException(HttpStatus httpStatus, String message) {
-        super(message);
-        this.httpStatus = httpStatus;
+    public WalletException() {
     }
 
+    public WalletException(String message) {
+        super(message);
+    }
 }

@@ -39,7 +39,7 @@ public class CustomerService {
 
         Customer customer = customerRepo.findByEmail(email);
         if(customer.isWalletAdded() == false) {
-            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added");
+            throw new CustomerException("Wallet not added");
         }
         Wallet wallet = customer.getWallet();
         Wallet updatedWallet = wallet.deposit(walletDTO);
@@ -52,10 +52,11 @@ public class CustomerService {
 
     }
 
+    @Transactional
     public Customer withdrawMoneyFromCustomerWallet(String email, WalletDTO walletDTO){
         Customer customer = customerRepo.findByEmail(email);
         if(customer.isWalletAdded() == false) {
-            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added");
+            throw new CustomerException("Wallet not added");
         }
         Wallet wallet = customer.getWallet();
         Wallet updatedWallet = wallet.withdraw(walletDTO);
@@ -71,14 +72,14 @@ public class CustomerService {
     public MoneyTransferResponse addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, WalletDTO moneyDTO){
         Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
         if(recievingCustomer == null) {
-            throw new CustomerException(HttpStatus.NOT_FOUND, "Invalid receiving customer email");
+            throw new CustomerException("Invalid receiving customer email");
         }
         if(recievingCustomer.isWalletAdded() == false) {
-            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added to receiving customer's account");
+            throw new CustomerException("Wallet not added to receiving customer's account");
         }
         Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
         if(sendingCustomer.isWalletAdded() == false) {
-            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added to sending customer's account");
+            throw new CustomerException("Wallet not added to sending customer's account");
         }
         Wallet senderWallet = sendingCustomer.getWallet();
         Wallet receiverWallet = recievingCustomer.getWallet();
@@ -102,7 +103,7 @@ public class CustomerService {
         Integer customerId = customer.getCustomerId();
         List<Transaction> transactions = transactionRepo.findBySenderIdOrReceiverId(customerId, customerId);
         if(transactions.size() == 0) {
-            throw new TransactionException(HttpStatus.NOT_FOUND, "No transactions found");
+            throw new TransactionException("No transactions found");
         }
         return transactions;
     }
@@ -110,7 +111,7 @@ public class CustomerService {
     public Wallet addWalletToUser(String email, Wallet wallet) {
         Customer customer = customerRepo.findByEmail(email);
         if(customer.isWalletAdded()) {
-            throw new WalletException(HttpStatus.BAD_REQUEST, "Wallet Already activated / added");
+            throw new WalletException("Wallet Already activated / added");
         }
         Customer walletAddedCustomer = new Customer(customer.getCustomerId(), customer.getName(), customer.getEmail(), customer.getPassword(), wallet);
         customerRepo.save(walletAddedCustomer);

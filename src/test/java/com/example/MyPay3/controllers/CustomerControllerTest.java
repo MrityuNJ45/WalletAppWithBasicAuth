@@ -1,12 +1,13 @@
 package com.example.MyPay3.controllers;
 
 import com.example.MyPay3.config.SecurityConfig;
-import com.example.MyPay3.exceptions.TransactionException;
 import com.example.MyPay3.exceptions.WalletException;
 import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.service.CustomerService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,20 +25,17 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
 import java.util.ArrayList;
 import java.util.List;
-
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Import(SecurityConfig.class)
@@ -168,7 +165,8 @@ class CustomerControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/transactions/get/all")
                         .with(user("test@example.com")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)));
+                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)))
+                .andExpect(status().isOk());
 
         Mockito.verify(customerService, Mockito.times(1)).getTransactionHistoryByUserEmail(authenticatedEmail);
     }
@@ -182,11 +180,30 @@ class CustomerControllerTest {
         mockMvc.perform(post("/add/wallet/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(wallet))
-                        .with(user(email))) // Set the authenticated user
+                        .with(user(email)))
                 .andExpect(status().isCreated());
 
     }
 
+
+    @Test
+    public void expectsToThrowExceptionWhenTryingToAddWalletToUserWhoAlreadyHasAWallet() throws Exception {
+        String email = "test@example.com";
+        Wallet wallet = new Wallet();
+        doThrow(new WalletException(HttpStatus.BAD_REQUEST,"Wallet Already activated / added")).when(customerService).addWalletToUser(email, wallet);
+        Mockito.when(customerService.addWalletToUser(email,wallet)).thenThrow(new WalletException(HttpStatus.BAD_REQUEST,"Wallet Already activated / added"));
+        ObjectMapper objectMapper = new ObjectMapper();
+        mockMvc.perform(post("/add/wallet/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wallet))
+                        .with(user(email)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Wallet Already activated / added"));
+        Mockito.verify(customerService, times(1)).addWalletToUser(email, wallet);
+
+    }
 
 
 

@@ -40,7 +40,7 @@ public class Wallet {
 
     public Wallet deposit(WalletDTO walletDTO ) {
         if(this.currency == null) {
-            throw new WalletException(HttpStatus.UNPROCESSABLE_ENTITY, "receiver's wallet not associated with any currency");
+            throw new WalletException("receiver's wallet not associated with any currency");
         }
         Double convertedAmount = walletDTO.getCurrency().convert(walletDTO.getAmount(), this.currency);
         Double resultAmount = this.balance + convertedAmount;
@@ -50,12 +50,12 @@ public class Wallet {
 
     public Wallet withdraw(WalletDTO moneyDTO) {
         if(this.currency == null) {
-            throw new WalletException(HttpStatus.UNPROCESSABLE_ENTITY, "sender's wallet not associated with any currency");
+            throw new WalletException("sender's wallet not associated with any currency");
         }
         Double convertedAmount = moneyDTO.getCurrency().convert(moneyDTO.getAmount(), this.currency);
 
         if(this.balance < convertedAmount) {
-            throw new WalletException(HttpStatus.BAD_REQUEST, "Insufficient balance in sender's wallet");
+            throw new WalletException("Insufficient balance in sender's wallet");
         }
         Double resultAmount = this.balance - convertedAmount;
         return new Wallet(this.walletId,this.currency ,resultAmount);
