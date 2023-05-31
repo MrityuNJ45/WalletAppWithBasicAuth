@@ -2,6 +2,7 @@ package com.example.MyPay3.service;
 
 import com.example.MyPay3.exceptions.CustomerException;
 import com.example.MyPay3.exceptions.TransactionException;
+import com.example.MyPay3.exceptions.WalletException;
 import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.repository.TransactionRepo;
@@ -29,23 +30,21 @@ public class CustomerService {
     @Transactional
     public Customer registerCustomer(Customer customer) {
 
-        Wallet wallet = new Wallet();
-        Customer savingCustomer = Customer.builder().customerId(customer.getCustomerId()).wallet(wallet).name(customer.getName())
-                .password(customer.getPassword()).email(customer.getEmail()).build();
-
-        walletRepo.save(wallet);
-        return customerRepo.save(savingCustomer);
+        return customerRepo.save(customer);
 
     }
 
     @Transactional
-    public Customer addMoneyToCustomerWallet(String email, MoneyDTO moneyDTO){
+    public Customer addMoneyToCustomerWallet(String email, WalletDTO walletDTO){
 
         Customer customer = customerRepo.findByEmail(email);
+        if(customer.isWalletAdded() == false) {
+            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added");
+        }
         Wallet wallet = customer.getWallet();
-        Wallet updatedWallet = wallet.deposit(moneyDTO);
+        Wallet updatedWallet = wallet.deposit(walletDTO);
         Transaction transaction = Transaction.builder().senderId(customer.getCustomerId())
-                .receiverId(customer.getCustomerId()).amount(moneyDTO.getAmount())
+                .receiverId(customer.getCustomerId()).amount(walletDTO.getAmount())
                 .build();
         transactionRepo.save(transaction);
         walletRepo.save(updatedWallet);
@@ -53,29 +52,34 @@ public class CustomerService {
 
     }
 
-    public Customer withdrawMoneyFromCustomerWallet(String email, MoneyDTO moneyDTO) throws IllegalStateException{
-
+    public Customer withdrawMoneyFromCustomerWallet(String email, WalletDTO walletDTO){
         Customer customer = customerRepo.findByEmail(email);
+        if(customer.isWalletAdded() == false) {
+            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added");
+        }
         Wallet wallet = customer.getWallet();
-        Wallet updatedWallet = wallet.withdraw(moneyDTO);
+        Wallet updatedWallet = wallet.withdraw(walletDTO);
         Transaction transaction = Transaction.builder().senderId(customer.getCustomerId())
-                .receiverId(customer.getCustomerId()).amount(moneyDTO.getAmount())
+                .receiverId(customer.getCustomerId()).amount(walletDTO.getAmount())
                 .build();
         transactionRepo.save(transaction);
         walletRepo.save(updatedWallet);
         return customerRepo.save(customer);
-
     }
 
     @Transactional
-    public MoneyTransfer addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, MoneyDTO moneyDTO){
+    public MoneyTransferResponse addMoneyToOtherUserWallet(String senderEmail, String receiverEmail, WalletDTO moneyDTO){
         Customer recievingCustomer = customerRepo.findByEmail(receiverEmail);
-
         if(recievingCustomer == null) {
             throw new CustomerException(HttpStatus.NOT_FOUND, "Invalid receiving customer email");
         }
-
+        if(recievingCustomer.isWalletAdded() == false) {
+            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added to receiving customer's account");
+        }
         Customer sendingCustomer = customerRepo.findByEmail(senderEmail);
+        if(sendingCustomer.isWalletAdded() == false) {
+            throw new CustomerException(HttpStatus.NOT_FOUND, "Wallet not added to sending customer's account");
+        }
         Wallet senderWallet = sendingCustomer.getWallet();
         Wallet receiverWallet = recievingCustomer.getWallet();
         senderWallet = senderWallet.withdraw(moneyDTO);
@@ -89,7 +93,7 @@ public class CustomerService {
                 .receiverId(recievingCustomer.getCustomerId()).amount(moneyDTO.getAmount())
                 .build();
         transactionRepo.save(transaction);
-        return new MoneyTransfer(true);
+        return new MoneyTransferResponse(true);
 
     }
 
@@ -101,6 +105,16 @@ public class CustomerService {
             throw new TransactionException(HttpStatus.NOT_FOUND, "No transactions found");
         }
         return transactions;
+    }
+
+    public Wallet addWalletToUser(String email, Wallet wallet) {
+        Customer customer = customerRepo.findByEmail(email);
+        if(customer.isWalletAdded()) {
+            throw new WalletException(HttpStatus.BAD_REQUEST, "Wallet Already activated / added");
+        }
+        Customer walletAddedCustomer = new Customer(customer.getCustomerId(), customer.getName(), customer.getEmail(), customer.getPassword(), wallet);
+        customerRepo.save(walletAddedCustomer);
+        return walletRepo.save(wallet);
     }
 
 

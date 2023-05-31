@@ -5,17 +5,11 @@ import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.repository.TransactionRepo;
 import com.example.MyPay3.repository.WalletRepo;
-import jakarta.annotation.security.RunAs;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,7 +52,7 @@ class CustomerServiceTest {
     @Test
     public void expectsToAddMoneyToCustomerWallet() {
         String email = "test@example.com";
-        MoneyDTO moneyDTO = new MoneyDTO(100.0, Currency.INR);
+        WalletDTO moneyDTO = new WalletDTO(100.0, Currency.INR);
         Wallet wallet = Wallet.builder().balance(10.0).currency(Currency.INR).build();
         Customer customer = Customer.builder().wallet(wallet).build();
         Wallet updatedWallet = wallet.deposit(moneyDTO);
@@ -80,7 +74,7 @@ class CustomerServiceTest {
     public void expectsToWithdrawMoneyFromCustomerWallet() {
 
             String email = "test@example.com";
-            MoneyDTO moneyDTO = new MoneyDTO(100.0, Currency.INR);
+            WalletDTO moneyDTO = new WalletDTO(100.0, Currency.INR);
             Wallet wallet = Wallet.builder().balance(1000.0).currency(Currency.INR).build();
             Customer customer = Customer.builder().wallet(wallet).build();
             Wallet updatedWallet = wallet.deposit(moneyDTO);
@@ -106,7 +100,7 @@ class CustomerServiceTest {
         // Mock data
         String senderEmail = "sender@example.com";
         String receiverEmail = "receiver@example.com";
-        MoneyDTO moneyToSend = new MoneyDTO(10.0,Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0,Currency.INR);
 
         Wallet senderWallet = Wallet.builder().balance(120.0).currency(Currency.INR).build();
 
@@ -118,7 +112,7 @@ class CustomerServiceTest {
         Mockito.when(customerRepo.findByEmail(receiverEmail)).thenReturn(receiverCustomer);
 
         // Invoke the method
-        MoneyTransfer actual = customerService.addMoneyToOtherUserWallet(senderEmail, receiverEmail, moneyToSend);
+        MoneyTransferResponse actual = customerService.addMoneyToOtherUserWallet(senderEmail, receiverEmail, moneyToSend);
 
         // Assertions
         senderWallet = senderWallet.deposit(moneyToSend);
@@ -129,7 +123,7 @@ class CustomerServiceTest {
         Mockito.verify(customerRepo, Mockito.times(1)).save(senderCustomer);
         Mockito.verify(customerRepo, Mockito.times(1)).save(receiverCustomer);
         Mockito.verify(transactionRepo, Mockito.times(1)).save(Mockito.any(Transaction.class));
-        MoneyTransfer expected = new MoneyTransfer(true);
+        MoneyTransferResponse expected = new MoneyTransferResponse(true);
         assertEquals(expected, actual);
     }
 
@@ -139,7 +133,7 @@ class CustomerServiceTest {
         // Mock data
         String senderEmail = "sender@example.com";
         String receiverEmail = "receiver@example.com";
-        MoneyDTO moneyToSend = new MoneyDTO(10.0,Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0,Currency.INR);
 
         Wallet senderWallet = Wallet.builder().balance(5.0).currency(Currency.INR).build();
 

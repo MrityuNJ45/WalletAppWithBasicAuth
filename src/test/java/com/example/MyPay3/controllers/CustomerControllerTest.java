@@ -3,17 +3,12 @@ package com.example.MyPay3.controllers;
 import com.example.MyPay3.config.SecurityConfig;
 import com.example.MyPay3.models.Currency;
 import com.example.MyPay3.models.Customer;
-import com.example.MyPay3.models.MoneyDTO;
-import com.example.MyPay3.models.Wallet;
+import com.example.MyPay3.models.WalletDTO;
 import com.example.MyPay3.repository.CustomerRepo;
-import com.example.MyPay3.repository.WalletRepo;
 import com.example.MyPay3.service.CustomerService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,12 +16,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -91,7 +82,7 @@ class CustomerControllerTest {
     @Test
     public void expectsToAddMoneyIfValidUserAndGiveStatusOk() throws Exception {
 
-        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0, Currency.INR);
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Mockito.when(customerService.addMoneyToCustomerWallet(customer.getEmail(),moneyToSend)).thenReturn(customer);
@@ -104,7 +95,7 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToGiveStatus403IfInvalidUser() throws Exception {
-        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0, Currency.INR);
         ObjectMapper objectMapper = new ObjectMapper();
         this.mockMvc.perform(put("/customer/add").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(moneyToSend)))
                 .andExpect(status().isUnauthorized());
@@ -112,7 +103,7 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToWithDrawMoneyIfValidUser() throws Exception {
-        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0, Currency.INR);
         Customer customer = new Customer("mohit", "m@gmail.com", "1234");
         Mockito.when(customerRepo.findByEmail(any(String.class))).thenReturn(customer);
         Mockito.when(customerService.withdrawMoneyFromCustomerWallet(customer.getEmail(),moneyToSend)).thenReturn(customer);
@@ -124,7 +115,7 @@ class CustomerControllerTest {
 
     @Test
     public void expectsToGive403IfInvalidUserForWithdrawingMoney() throws Exception {
-        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0, Currency.INR);
         ObjectMapper objectMapper = new ObjectMapper();
         this.mockMvc.perform(put("/customer/add").contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(moneyToSend))).andExpect(status().isUnauthorized());
@@ -133,19 +124,19 @@ class CustomerControllerTest {
     @Test
     public void expectsToGiveHttpStatus202WhenTryingToAddMoneyToOtherUserWallet() throws Exception {
 
-        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0, Currency.INR);
         String otherUserEmail = "validReceiver@gmail.com";
         ObjectMapper objectMapper = new ObjectMapper();
 
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}",otherUserEmail).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(moneyToSend)).with(user("valid@gmail.com")))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()).andExpect(jsonPath("$.moneyTransferSuccess").value(true));;
 
     }
 
     @Test
     public void expectsToGiveHttpStatus403WhenTryingToAddMoneyWithInvalidUser() throws Exception {
-        MoneyDTO moneyToSend = new MoneyDTO(10.0, Currency.INR);
+        WalletDTO moneyToSend = new WalletDTO(10.0, Currency.INR);
         String otherUserEmail = "aaaa@gmail.com";
         ObjectMapper objectMapper = new ObjectMapper();
         this.mockMvc.perform(put("/customer/addmoney/{otherUserEmail}", otherUserEmail).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(moneyToSend)))
@@ -154,6 +145,8 @@ class CustomerControllerTest {
 
 
 
+//    @Test
+//    public void expects
 
 
 

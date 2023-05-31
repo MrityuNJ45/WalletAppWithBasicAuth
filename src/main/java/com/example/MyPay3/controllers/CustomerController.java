@@ -1,9 +1,6 @@
 package com.example.MyPay3.controllers;
 
-import com.example.MyPay3.models.Customer;
-import com.example.MyPay3.models.MoneyDTO;
-import com.example.MyPay3.models.MoneyTransfer;
-import com.example.MyPay3.models.Transaction;
+import com.example.MyPay3.models.*;
 import com.example.MyPay3.repository.CustomerRepo;
 import com.example.MyPay3.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,21 +34,21 @@ public class CustomerController {
     }
 
     @PutMapping("/customer/add")
-    public ResponseEntity<Customer> addMoneyToCustomerWallet(@AuthenticationPrincipal(expression = "username") String email, @RequestBody MoneyDTO moneyDTO){
+    public ResponseEntity<Customer> addMoneyToCustomerWallet(@AuthenticationPrincipal(expression = "username") String email, @RequestBody WalletDTO moneyDTO){
 
         Customer response = customerService.addMoneyToCustomerWallet(email,moneyDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/customer/withdraw")
-    public ResponseEntity<Customer> withDrawMoneyFromCustomerHandler(@AuthenticationPrincipal(expression = "username") String email, @RequestBody MoneyDTO moneyDTO){
+    public ResponseEntity<Customer> withDrawMoneyFromCustomerHandler(@AuthenticationPrincipal(expression = "username") String email, @RequestBody WalletDTO moneyDTO){
         Customer response = customerService.withdrawMoneyFromCustomerWallet(email,moneyDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/customer/addmoney/{otherUserEmail}")
-    public ResponseEntity<MoneyTransfer> addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("otherUserEmail") String otherUserEmail, @RequestBody MoneyDTO moneyDTO) {
-        MoneyTransfer response = customerService.addMoneyToOtherUserWallet(email, otherUserEmail, moneyDTO);
+    public ResponseEntity<MoneyTransferResponse> addMoneyToOtherUserWalletHandler(@AuthenticationPrincipal(expression = "username") String email, @PathVariable("otherUserEmail") String otherUserEmail, @RequestBody WalletDTO moneyDTO) {
+        MoneyTransferResponse response = customerService.addMoneyToOtherUserWallet(email, otherUserEmail, moneyDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -68,8 +65,11 @@ public class CustomerController {
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
-
-
+//    @PostMapping("/add/wallet/user")
+//    public ResponseEntity<Wallet> addWalletToUser(@AuthenticationPrincipal(expression = "username") String email, @RequestBody WalletDTO walletDTO) {
+//        //Wallet  wallet  = customerService.addWalletToUser(email, walletDTO);
+//        return new ResponseEntity<>(wallet, HttpStatus.CREATED);
+//    }
 
 
 }

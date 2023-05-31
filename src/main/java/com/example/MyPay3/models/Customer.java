@@ -1,5 +1,6 @@
 package com.example.MyPay3.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,6 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer customerId;
     private String name;
-
     private String email;
 
 
@@ -28,6 +28,7 @@ public class Customer {
     private String password;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Wallet wallet;
 
     public Customer(String name, String email, String password) {
@@ -35,6 +36,24 @@ public class Customer {
         this.email = email;
         this.password = password;
     }
+
+    public Customer (Wallet wallet) {
+        this.wallet = wallet;
+    }
+
+    @JsonIgnore
+    public Boolean isWalletAdded() {
+        if(wallet == null) {
+            return false;
+        }
+        return true;
+    }
+
+    @JsonIgnore
+    public Customer activateWallet(Customer customerDummyWithWallet) {
+        return new Customer(this.customerId, this.name, this.email, this.password, customerDummyWithWallet.wallet);
+    }
+
 
 
 

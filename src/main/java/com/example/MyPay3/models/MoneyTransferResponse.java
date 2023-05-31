@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class MoneyTransfer {
+public class MoneyTransferResponse {
 
     private Boolean moneyTransferSuccess;
 
